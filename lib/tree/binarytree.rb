@@ -65,46 +65,46 @@ module Tree
     end
 
     # Returns the left child of the receiver node. Note that left Child == first Child.
-    def leftChild
+    def left_child
       children.first
     end
 
     # Returns the right child of the receiver node. Note that right child == last child unless there is only one child.
     #
     # Returns +nil+ if the right child does not exist.
-    def rightChild
+    def right_child
       children[1]
     end
 
     # Sets the left child of the receiver node. If a previous child existed, it is replaced.
-    def leftChild=(child)
+    def left_child=(child)
       @children[0] = child
-      @childrenHash[child.name] = child if child # Assign the name mapping
+      @children_hash[child.name] = child if child # Assign the name mapping
     end
 
     # Sets the right child of the receiver node. If a previous child existed, it is replaced.
-    def rightChild=(child)
+    def right_child=(child)
       @children[1] = child
-      @childrenHash[child.name] = child if child # Assign the name mapping
+      @children_hash[child.name] = child if child # Assign the name mapping
     end
 
     # Returns +true+ if the receiver node is the left child of its parent.  Always returns +false+ if it is a root node.
-    def isLeftChild?
-      return false if isRoot?
-      self == parent.leftChild
+    def is_left_child?
+      return false if is_root?
+      self == parent.left_child
     end
 
     # Returns +true+ if the receiver node is the right child of its parent. Always returns +false+ if it is a root node.
-    def isRightChild?
-      return false if isRoot?
-      self == parent.rightChild
+    def is_right_child?
+      return false if is_root?
+      self == parent.right_child
     end
 
-    # Swaps the left and right child nodes of the receiver node with each other.
+    # Swaps the left and right cthild nodes of the receiver node with each other.
     def swap_children
-      tempChild       = leftChild
-      self.leftChild  = rightChild
-      self.rightChild = tempChild
+      temp_child       = left_child
+      self.left_child  = right_child
+      self.right_child = temp_child
     end
   end
 

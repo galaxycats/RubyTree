@@ -61,12 +61,12 @@ module TestTree
 
     def test_add
       @root.add  @left_child1
-      assert_same(@left_child1, @root.leftChild, "The left node should be left_child1")
-      assert_same(@left_child1, @root.firstChild, "The first node should be left_child1")
+      assert_same(@left_child1, @root.left_child, "The left node should be left_child1")
+      assert_same(@left_child1, @root.first_child, "The first node should be left_child1")
 
       @root.add @right_child1
-      assert_same(@right_child1, @root.rightChild, "The right node should be right_child1")
-      assert_same(@right_child1, @root.lastChild, "The first node should be right_child1")
+      assert_same(@right_child1, @root.right_child, "The right node should be right_child1")
+      assert_same(@right_child1, @root.last_child, "The first node should be right_child1")
 
       assert_raise RuntimeError do
         @root.add Tree::BinaryTreeNode.new("The third child!")
@@ -77,93 +77,93 @@ module TestTree
       end
     end
 
-    def test_leftChild
+    def test_left_child
       @root << @left_child1
       @root << @right_child1
-      assert_same(@left_child1, @root.leftChild, "The left child should be 'left_child1")
-      assert_not_same(@right_child1, @root.leftChild, "The right_child1 is not the left child")
+      assert_same(@left_child1, @root.left_child, "The left child should be 'left_child1")
+      assert_not_same(@right_child1, @root.left_child, "The right_child1 is not the left child")
     end
 
-    def test_rightChild
+    def test_right_child
       @root << @left_child1
       @root << @right_child1
-      assert_same(@right_child1, @root.rightChild, "The right child should be 'right_child1")
-      assert_not_same(@left_child1, @root.rightChild, "The left_child1 is not the left child")
+      assert_same(@right_child1, @root.right_child, "The right child should be 'right_child1")
+      assert_not_same(@left_child1, @root.right_child, "The left_child1 is not the left child")
     end
 
-    def test_leftChild_equals
+    def test_left_child_equals
       @root << @left_child1
       @root << @right_child1
-      assert_same(@left_child1, @root.leftChild, "The left child should be 'left_child1")
+      assert_same(@left_child1, @root.left_child, "The left child should be 'left_child1")
 
-      @root.leftChild = Tree::BinaryTreeNode.new("New Left Child")
-      assert_equal("New Left Child", @root.leftChild.name, "The left child should now be the new child")
-      assert_equal("B Child at Right", @root.lastChild.name, "The last child should now be the right child")
+      @root.left_child = Tree::BinaryTreeNode.new("New Left Child")
+      assert_equal("New Left Child", @root.left_child.name, "The left child should now be the new child")
+      assert_equal("B Child at Right", @root.last_child.name, "The last child should now be the right child")
 
       # Now set the left child as nil, and retest
-      @root.leftChild = nil
-      assert_nil(@root.leftChild, "The left child should now be nil")
-      assert_nil(@root.firstChild, "The first child is now nil")
-      assert_equal("B Child at Right", @root.lastChild.name, "The last child should now be the right child")
+      @root.left_child = nil
+      assert_nil(@root.left_child, "The left child should now be nil")
+      assert_nil(@root.first_child, "The first child is now nil")
+      assert_equal("B Child at Right", @root.last_child.name, "The last child should now be the right child")
     end
 
-    def test_rightChild_equals
+    def test_right_child_equals
       @root << @left_child1
       @root << @right_child1
-      assert_same(@right_child1, @root.rightChild, "The right child should be 'right_child1")
+      assert_same(@right_child1, @root.right_child, "The right child should be 'right_child1")
 
-      @root.rightChild = Tree::BinaryTreeNode.new("New Right Child")
-      assert_equal("New Right Child", @root.rightChild.name, "The right child should now be the new child")
-      assert_equal("A Child at Left", @root.firstChild.name, "The first child should now be the left child")
-      assert_equal("New Right Child", @root.lastChild.name, "The last child should now be the right child")
+      @root.right_child = Tree::BinaryTreeNode.new("New Right Child")
+      assert_equal("New Right Child", @root.right_child.name, "The right child should now be the new child")
+      assert_equal("A Child at Left", @root.first_child.name, "The first child should now be the left child")
+      assert_equal("New Right Child", @root.last_child.name, "The last child should now be the right child")
 
       # Now set the right child as nil, and retest
-      @root.rightChild = nil
-      assert_nil(@root.rightChild, "The right child should now be nil")
-      assert_equal("A Child at Left", @root.firstChild.name, "The first child should now be the left child")
-      assert_nil(@root.lastChild, "The first child is now nil")
+      @root.right_child = nil
+      assert_nil(@root.right_child, "The right child should now be nil")
+      assert_equal("A Child at Left", @root.first_child.name, "The first child should now be the left child")
+      assert_nil(@root.last_child, "The first child is now nil")
     end
 
-    def test_isLeftChild_eh
+    def test_is_left_child_eh
       @root << @left_child1
       @root << @right_child1
 
-      assert(@left_child1.isLeftChild?, "left_child1 should be the left child")
-      assert(!@right_child1.isLeftChild?, "left_child1 should be the left child")
+      assert(@left_child1.is_left_child?, "left_child1 should be the left child")
+      assert(!@right_child1.is_left_child?, "left_child1 should be the left child")
 
       # Now set the right child as nil, and retest
-      @root.rightChild = nil
-      assert(@left_child1.isLeftChild?, "left_child1 should be the left child")
+      @root.right_child = nil
+      assert(@left_child1.is_left_child?, "left_child1 should be the left child")
 
-      assert(!@root.isLeftChild?, "Root is neither left child nor right")
+      assert(!@root.is_left_child?, "Root is neither left child nor right")
     end
 
-    def test_isRightChild_eh
+    def test_is_right_child_eh
       @root << @left_child1
       @root << @right_child1
 
-      assert(@right_child1.isRightChild?, "right_child1 should be the right child")
-      assert(!@left_child1.isRightChild?, "right_child1 should be the right child")
+      assert(@right_child1.is_right_child?, "right_child1 should be the right child")
+      assert(!@left_child1.is_right_child?, "right_child1 should be the right child")
 
       # Now set the left child as nil, and retest
-      @root.leftChild = nil
-      assert(@right_child1.isRightChild?, "right_child1 should be the right child")
-      assert(!@root.isRightChild?, "Root is neither left child nor right")
+      @root.left_child = nil
+      assert(@right_child1.is_right_child?, "right_child1 should be the right child")
+      assert(!@root.is_right_child?, "Root is neither left child nor right")
     end
 
     def test_swap_children
       @root << @left_child1
       @root << @right_child1
 
-      assert(@right_child1.isRightChild?, "right_child1 should be the right child")
-      assert(!@left_child1.isRightChild?, "right_child1 should be the right child")
+      assert(@right_child1.is_right_child?, "right_child1 should be the right child")
+      assert(!@left_child1.is_right_child?, "right_child1 should be the right child")
 
       @root.swap_children
 
-      assert(@right_child1.isLeftChild?, "right_child1 should now be the left child")
-      assert(@left_child1.isRightChild?, "left_child1 should now be the right child")
-      assert_equal(@right_child1, @root.firstChild, "right_child1 should now be the first child")
-      assert_equal(@left_child1, @root.lastChild, "left_child1 should now be the last child")
+      assert(@right_child1.is_left_child?, "right_child1 should now be the left child")
+      assert(@left_child1.is_right_child?, "left_child1 should now be the right child")
+      assert_equal(@right_child1, @root.first_child, "right_child1 should now be the first child")
+      assert_equal(@left_child1, @root.last_child, "left_child1 should now be the last child")
       assert_equal(@right_child1, @root[0], "right_child1 should now be the first child")
       assert_equal(@left_child1, @root[1], "left_child1 should now be the last child")
     end
