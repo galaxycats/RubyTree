@@ -537,6 +537,43 @@ module Tree
       end
     end
 
+    # Creates a JSON representation of this node including all it children.
+    def to_json(*a)
+      begin
+        require 'json'
+        
+        json_hash = {
+          "name"         => name,
+          "content"      => content,
+          JSON.create_id => self.class.name
+        }
+
+        if has_children?
+          json_hash["children"] = children
+        end
+
+        return json_hash.to_json
+      rescue LoadError => e
+        warn "The JSON-Gem couldn't be loaded. Due to this we cannot serialize the tree to a JSON representation"
+      end
+    end
+
+    # Creates a Tree::TreeNode object instance from a given JSON Hash representation
+    def self.json_create(json_hash)
+      begin
+        require 'json'
+
+        node = new(json_hash["name"], json_hash["content"])
+        json_hash["children"].each do |child|
+          node << child
+        end if json_hash["children"]
+        
+        return node
+      rescue LoadError => e
+        warn "The JSON-Gem couldn't be loaded. Due to this we cannot serialize the tree to a JSON representation"
+      end
+    end
+
     # Returns height of the (sub)tree from the receiver node.  Height of a node is defined as:
     #
     # Height:: Length of the longest downward path to a leaf from the node.
