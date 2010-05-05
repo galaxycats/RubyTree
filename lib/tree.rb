@@ -203,15 +203,20 @@ module Tree
     # The receiver node becomes parent of the node passed in as the argument, and
     # the child is added as the last child ("right most") in the current set of
     # children of the receiver node.
+    # 
+    # Additionally you can specify a insert position. The new node will be inserted
+    # BEFORE that position. If you don't specify any position the node will be
+    # just appended. This feature is provided to make implementation of node
+    # movement within the tree very simple.
     #
     # Returns the added child node.
     #
     # An exception is raised if another child node with the same name exists.
-    def add(child)
+    def add(child, at_index = -1)
       raise "Child already added" if @children_hash.has_key?(child.name)
 
       @children_hash[child.name]  = child
-      @children << child
+      @children.insert(at_index, child)
       child.parent = self
       return child
     end

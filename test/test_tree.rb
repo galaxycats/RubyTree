@@ -256,7 +256,24 @@ module TestTree
       assert_equal(2, @child3.size, "Should have two nodes")
 
       assert_raise(RuntimeError) { @root.add(Tree::TreeNode.new(@child1.name)) }
+    end
+    
+    def test_add_at_specific_position
+      assert(!@root.has_children?, "Should not have any children")
 
+      assert_equal(1, @root.size, "Should have 1 node (the root)")
+      @root.add(@child1)
+
+      @root << @child2
+
+      assert(@root.has_children?, "Should have children")
+      assert_equal(3, @root.size, "Should have three nodes")
+
+      @root.add(@child3, 1)
+      
+      assert_equal @child1, @root[0]
+      assert_equal @child3, @root[1]
+      assert_equal @child2, @root[2]
     end
 
     def test_remove_bang
@@ -283,7 +300,6 @@ module TestTree
 
       assert(!@root.has_children?, "Should have no children")
       assert_equal(1, @root.size, "Should have one node")
-
     end
 
     def test_remove_all_bang
