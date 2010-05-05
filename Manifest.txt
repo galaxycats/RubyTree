@@ -1,8 +1,8 @@
 COPYING
-ChangeLog
 History.txt
 Manifest.txt
 README
+API-CHANGES
 Rakefile
 TODO
 lib/tree.rb

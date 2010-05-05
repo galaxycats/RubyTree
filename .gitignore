@@ -1,1 +1,9 @@
-pkg/rubytree-0.6.2.gem
+pkg/*.gem
+TAGS
+coverage.info
+doc/
+pkg/
+coverage/
+tmp/
+.yardoc/
+.DS_Store

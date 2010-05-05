@@ -1,3 +1,24 @@
+=== 0.7.0 / 2010-05-03
+
+* Added new methods to report the degree statistics of a node.
+
+* Added a convenience method alias 'level' to 'nodeDepth'.
+
+* Converted the exceptions thrown on invalid arguments to 'ArgumentError' instead of 'RuntimeError'.
+
+* Converted the documentation to Yard format.
+
+* Added new methods for converting from/to JSON formats.  Thanks to Dirk Breuer[http://github.com/railsbros-dirk] for
+  this fork[http://github.com/galaxycats/].
+
+* Added a separate API-CHANGES documentation file.
+
+* Added fixes for root related edge conditions to 'isOnlyChild?', 'nextSibling', 'previousSibling' and 'remove' methods.
+
+* Removed the 'ChangeLog' file as this can now be generated from the git logs.
+
+* Other minor code cleanup.
+
 === 0.6.2 / 2010-01-30
 
 * Updated the documentation.

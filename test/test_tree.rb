@@ -45,15 +45,6 @@ module TestTree
 
     Person = Struct::new(:First, :last) # A simple structure to use as the content for the nodes.
 
-    def setup
-      @root = Tree::TreeNode.new("ROOT", "Root Node")
-
-      @child1 = Tree::TreeNode.new("Child1", "Child Node 1")
-      @child2 = Tree::TreeNode.new("Child2", "Child Node 2")
-      @child3 = Tree::TreeNode.new("Child3", "Child Node 3")
-      @child4 = Tree::TreeNode.new("Child31", "Grand Child 1")
-
-    end
 
     # Create this structure for the tests
     #
@@ -73,43 +64,60 @@ module TestTree
     #            +----+  CHILD3       +---+  CHILD4          |
     #                 +---------------+   +------------------+
     #
-    def load_children
+    # Some basic setup to create the nodes for the test tree.
+    def setup
+      @root = Tree::TreeNode.new("ROOT", "Root Node")
+
+      @child1 = Tree::TreeNode.new("Child1", "Child Node 1")
+      @child2 = Tree::TreeNode.new("Child2", "Child Node 2")
+      @child3 = Tree::TreeNode.new("Child3", "Child Node 3")
+      @child4 = Tree::TreeNode.new("Child31", "Grand Child 1")
+
+    end
+
+    # Create the actual test tree.
+    def setup_test_tree
       @root << @child1
       @root << @child2
       @root << @child3 << @child4
     end
 
+    # Tear down the entire structure
     def teardown
       @root = nil
     end
 
     # This test is for the root alone - without any children being linked
     def test_root_setup
-      assert_not_nil(@root        , "Root cannot be nil")
-      assert_nil(@root.parent     , "Parent of root node should be nil")
-      assert_not_nil(@root.name   , "Name should not be nil")
-      assert_equal("ROOT"         , @root.name, "Name should be 'ROOT'")
-      assert_equal("Root Node"    , @root.content, "Content should be 'Root Node'")
+      assert_not_nil(@root       , "Root cannot be nil")
+      assert_nil(@root.parent    , "Parent of root node should be nil")
+      assert_not_nil(@root.name  , "Name should not be nil")
+      assert_equal("ROOT"        , @root.name, "Name should be 'ROOT'")
+      assert_equal("Root Node"   , @root.content, "Content should be 'Root Node'")
       assert(@root.is_root?       , "Should identify as root")
       assert(!@root.has_children? , "Cannot have any children")
       assert(@root.has_content?   , "This root should have content")
-      assert_equal(1              , @root.size, "Number of nodes should be one")
-      assert_nil(@root.siblings   , "This root does not have any children")
-
+      assert_equal(1             , @root.size, "Number of nodes should be one")
+      assert_nil(@root.siblings  , "This root does not have any children")
+      assert_equal(0, @root.in_degree, "Root should have an in-degree of 0")
       assert_equal(0, @root.node_height, "Root's height before adding any children is 0")
-      assert_raise(RuntimeError) { Tree::TreeNode.new(nil) }
+      assert_raise(ArgumentError) { Tree::TreeNode.new(nil) }
     end
 
-    # This test is for the state after the children are linked to the root
+    # This test is for the state after the children are linked to the root.
     def test_root
-      load_children
+      setup_test_tree
 
+      # TODO: Should probably change this logic.  Root's root should
+      # return nil so that the possibility of a recursive error does not exist
+      # at all.
       assert_same(@root , @root.root, "Root's root is self")
       assert_same(@root , @child1.root, "Root should be ROOT")
       assert_same(@root , @child4.root, "Root should be ROOT")
       assert_equal(2    , @root.node_height, "Root's height after adding the children should be 2")
     end
 
+    # Test the presence of content in the nodes.
     def test_has_content_eh
       a_node = Tree::TreeNode.new("A Node")
       assert_nil(a_node.content  , "The node should not have content")
@@ -120,11 +128,13 @@ module TestTree
       assert(a_node.has_content?, "The node should now have content")
     end
 
-    def test_length
-      load_children
+    # Test the equivalence of size and length methods.
+    def test_length_is_size
+      setup_test_tree
       assert_equal(@root.size, @root.length, "Length and size methods should return the same result")
     end
 
+    # Test the <=> operator.
     def test_spaceship          # Test the <=> operator.
       first_node  = Tree::TreeNode.new(1)
       second_node = Tree::TreeNode.new(2)
@@ -145,6 +155,7 @@ module TestTree
       assert_equal(first_node <=> second_node, 0)
     end
 
+    # Test the to_s method.  This is probably a little fragile right now.
     def test_to_s
       a_node = Tree::TreeNode.new("A Node", "Some Content")
 
@@ -153,9 +164,11 @@ module TestTree
       assert_equal(expected_string, a_node.to_s, "The string representation should be same")
     end
 
+    # Test the first_sibling method
     def test_first_sibling
-      load_children
+      setup_test_tree
 
+      # TODO: Need to fix the first_sibling method to return nil for nodes with no siblings.
       assert_same(@root, @root.first_sibling, "Root's first sibling is itself")
       assert_same(@child1, @child1.first_sibling, "Child1's first sibling is itself")
       assert_same(@child1, @child2.first_sibling, "Child2's first sibling should be child1")
@@ -163,9 +176,11 @@ module TestTree
       assert_not_same(@child1, @child4.first_sibling, "Child4's first sibling is itself")
     end
 
+    # Test the is_first_sibling? method
     def test_is_first_sibling_eh
-      load_children
+      setup_test_tree
 
+      # TODO: Need to fix the first_sibling method to return nil for nodes with no siblings.
       assert(@root.is_first_sibling?, "Root's first sibling is itself")
       assert( @child1.is_first_sibling?, "Child1's first sibling is itself")
       assert(!@child2.is_first_sibling?, "Child2 is not the first sibling")
@@ -173,9 +188,11 @@ module TestTree
       assert( @child4.is_first_sibling?, "Child4's first sibling is itself")
     end
 
+    # Test the is_last_sibling? method
     def test_is_last_sibling_eh
-      load_children
+      setup_test_tree
 
+      # TODO: Need to fix the last_sibling method to return nil for nodes with no siblings.
       assert(@root.is_last_sibling?, "Root's last sibling is itself")
       assert(!@child1.is_last_sibling?, "Child1 is not the last sibling")
       assert(!@child2.is_last_sibling?, "Child2 is not the last sibling")
@@ -183,9 +200,11 @@ module TestTree
       assert( @child4.is_last_sibling?, "Child4's last sibling is itself")
     end
 
+    # Test the last_sibling method
     def test_last_sibling
-      load_children
+      setup_test_tree
 
+      # TODO: Need to fix the last_sibling method to return nil for nodes with no siblings.
       assert_same(@root, @root.last_sibling, "Root's last sibling is itself")
       assert_same(@child3, @child1.last_sibling, "Child1's last sibling should be child3")
       assert_same(@child3, @child2.last_sibling, "Child2's last sibling should be child3")
@@ -193,11 +212,14 @@ module TestTree
       assert_not_same(@child3, @child4.last_sibling, "Child4's last sibling is itself")
     end
 
+    # Test the siblings method, which is essentially an iterator.
     def test_siblings
-      load_children
+      setup_test_tree
 
+      # Lets first collect the siblings in an array.
       siblings = []
       @child1.siblings { |sibling| siblings << sibling}
+
       assert_equal(2, siblings.length, "Should have two siblings")
       assert(siblings.include?(@child2), "Should have 2nd child as sibling")
       assert(siblings.include?(@child3), "Should have 3rd child as sibling")
@@ -208,37 +230,47 @@ module TestTree
 
       siblings.clear
       @child4.siblings {|sibling| siblings << sibling}
-      assert(siblings.empty?, "Should not have any children")
+      assert(siblings.empty?, "Should not have any siblings")
 
+      siblings.clear
+      siblings = @root.siblings
+      assert_nil(siblings, "Root should not have any siblings")
     end
 
+    # Test the is_only_child? method.
     def test_is_only_child_eh
-      load_children
+      setup_test_tree
 
+      assert( @root.is_only_child?  , "Root is an only child")
       assert(!@child1.is_only_child?, "Child1 is not the only child")
       assert(!@child2.is_only_child?, "Child2 is not the only child")
       assert(!@child3.is_only_child?, "Child3 is not the only child")
       assert( @child4.is_only_child?, "Child4 is not the only child")
     end
 
+    # Test the next_sibling method.
     def test_next_sibling
-      load_children
+      setup_test_tree
 
+      assert_nil(@root.next_sibling, "Root does not have any next sibling")
       assert_equal(@child2, @child1.next_sibling, "Child1's next sibling is Child2")
       assert_equal(@child3, @child2.next_sibling, "Child2's next sibling is Child3")
       assert_nil(@child3.next_sibling, "Child3 does not have a next sibling")
       assert_nil(@child4.next_sibling, "Child4 does not have a next sibling")
     end
 
+    # Test the previous_sibling method.
     def test_previous_sibling
-      load_children
+      setup_test_tree
 
+      assert_nil(@root.previous_sibling, "Root does not have any previous sibling")
       assert_nil(@child1.previous_sibling, "Child1 does not have previous sibling")
       assert_equal(@child1, @child2.previous_sibling, "Child2's previous sibling is Child1")
       assert_equal(@child2, @child3.previous_sibling, "Child3's previous sibling is Child2")
       assert_nil(@child4.previous_sibling, "Child4 does not have a previous sibling")
     end
 
+    # Test the add method.
     def test_add
       assert(!@root.has_children?, "Should not have any children")
 
@@ -255,6 +287,10 @@ module TestTree
       assert_equal(5, @root.size, "Should have five nodes")
       assert_equal(2, @child3.size, "Should have two nodes")
 
+      # Test the addition of a nil node.
+      assert_raise(ArgumentError) { @root.add(nil) }
+
+      # Test the addition of a duplicate node (duplicate being defined as a node with the same name).
       assert_raise(RuntimeError) { @root.add(Tree::TreeNode.new(@child1.name)) }
     end
     
@@ -276,6 +312,7 @@ module TestTree
       assert_equal @child2, @root[2]
     end
 
+    # Test the remove! and remove_all! methods.
     def test_remove_bang
       @root << @child1
       @root << @child2
@@ -300,10 +337,17 @@ module TestTree
 
       assert(!@root.has_children?, "Should have no children")
       assert_equal(1, @root.size, "Should have one node")
+
+      # Some negative testing
+      @root.remove!(nil)
+      assert(!@root.has_children?, "Should have no children")
+      assert_equal(1, @root.size, "Should have one node")
     end
 
+    # Test the remove_all! method.
     def test_remove_all_bang
-      load_children
+      setup_test_tree
+
       assert(@root.has_children?, "Should have children")
       @root.remove_all!
 
@@ -311,8 +355,9 @@ module TestTree
       assert_equal(1, @root.size, "Should have one node")
     end
 
+    # Test the remove_from_parent! method.
     def test_remove_from_parent_bang
-      load_children
+      setup_test_tree
       assert(@root.has_children?, "Should have children")
       assert(!@root.is_leaf?, "Root is not a leaf here")
 
@@ -328,8 +373,9 @@ module TestTree
       assert_same(child1, child1.root, "Child 1's root should still be self")
     end
 
+    # Test the children method.
     def test_children
-      load_children
+      setup_test_tree
 
       assert(@root.has_children?, "Should have children")
       assert_equal(5, @root.size, "Should have five nodes")
@@ -358,24 +404,27 @@ module TestTree
       assert_equal(3, children.length, "Should have three children")
     end
 
+    # Test the first_child method.
     def test_first_child
-      load_children
+      setup_test_tree
 
       assert_equal(@child1, @root.first_child, "Root's first child is Child1")
       assert_nil(@child1.first_child, "Child1 does not have any children")
       assert_equal(@child4, @child3.first_child, "Child3's first child is Child4")
     end
 
+    # Test the last_child method.
     def test_last_child
-      load_children
+      setup_test_tree
 
       assert_equal(@child3, @root.last_child, "Root's last child is Child3")
       assert_nil(@child1.last_child, "Child1 does not have any children")
       assert_equal(@child4, @child3.last_child, "Child3's last child is Child4")
     end
 
+    # Test the find method.
     def test_find
-      load_children
+      setup_test_tree
       found_node = @root.find { |node| node == @child2}
       assert_same(@child2, found_node, "The node should be Child 2")
 
@@ -388,16 +437,18 @@ module TestTree
       assert_nil(found_node, "The node should not be found")
     end
 
+    # Test the parentage method.
     def test_parentage
-      load_children
+      setup_test_tree
 
       assert_nil(@root.parentage, "Root does not have any parentage")
       assert_equal([@root], @child1.parentage, "Child1 has Root as its parent")
       assert_equal([@child3, @root], @child4.parentage, "Child4 has Child3 and Root as ancestors")
     end
 
+    # Test the each method.
     def test_each
-      load_children
+      setup_test_tree
       assert(@root.has_children?, "Should have children")
       assert_equal(5, @root.size, "Should have five nodes")
       assert(@child3.has_children?, "Should have children")
@@ -413,8 +464,9 @@ module TestTree
       assert(nodes.include?(@child4), "Should have child 4")
     end
 
+    # Test the each_leaf method.
     def test_each_leaf
-      load_children
+      setup_test_tree
 
       nodes = []
       @root.each_leaf { |node| nodes << node }
@@ -427,8 +479,10 @@ module TestTree
       assert(nodes.include?(@child4), "Should have child 4")
     end
 
+    # Test the parent method.
     def test_parent
-      load_children
+      setup_test_tree
+
       assert_nil(@root.parent, "Root's parent should be nil")
       assert_equal(@root, @child1.parent, "Parent should be root")
       assert_equal(@root, @child3.parent, "Parent should be root")
@@ -436,18 +490,22 @@ module TestTree
       assert_equal(@root, @child4.parent.parent, "Parent should be root")
     end
 
+    # Test the [] method.
     def test_indexed_access
-      load_children
+      setup_test_tree
+
       assert_equal(@child1, @root[0], "Should be the first child")
       assert_equal(@child4, @root[2][0], "Should be the grandchild")
       assert_nil(@root["TEST"], "Should be nil")
-      assert_raise(RuntimeError) { @root[nil] }
+      assert_nil(@root[99], "Should be nil")
+      assert_raise(ArgumentError) { @root[nil] }
     end
 
+    # Test the print_tree method.
     def test_print_tree
-      load_children
+      setup_test_tree
       #puts
-      #@root.printTree
+      #@root.print_tree
     end
 
     # Tests the binary dumping mechanism with an Object content node
@@ -497,7 +555,7 @@ module TestTree
 
     # Test the collect method from the mixed-in Enumerable functionality.
     def test_collect
-      load_children
+      setup_test_tree
       collect_array = @root.collect do |node|
         node.content = "abc"
         node
@@ -507,7 +565,7 @@ module TestTree
 
     # Test freezing the tree
     def test_freeze_tree_bang
-      load_children
+      setup_test_tree
       @root.content = "ABC"
       assert_equal("ABC", @root.content, "Content should be 'ABC'")
       @root.freeze_tree!
@@ -584,12 +642,27 @@ module TestTree
     def test_node_depth
       assert_equal(0, @root.node_depth, "A root node's depth is 0")
 
-      load_children
+      setup_test_tree
       for child in [@child1, @child2, @child3]
         assert_equal(1, child.node_depth, "Node #{child.name} should have depth 1")
       end
 
       assert_equal(2, @child4.node_depth, "Child 4 should have depth 2")
+    end
+
+    # Test the level method.  Since this is an alias of nodeDepth, we just test for equivalence
+    def test_level
+      assert_equal(0, @root.level, "A root node's level is 0")
+
+      assert_equal(@root.node_depth, @root.level, "Level and depth should be the same")
+
+      setup_test_tree
+      for child in [@child1, @child2, @child3]
+        assert_equal(1, child.level, "Node #{child.name} should have level 1")
+        assert_equal(@root.node_depth, @root.level, "Level and depth should be the same")
+      end
+
+      assert_equal(2, @child4.level, "Child 4 should have level 2")
     end
 
     # Test the breadth computation algorithm
@@ -648,7 +721,7 @@ module TestTree
       end
     end
 
-
+    # Test the preordered_each method.
     def test_preordered_each
       j = Tree::TreeNode.new("j")
       f = Tree::TreeNode.new("f")
@@ -682,8 +755,9 @@ module TestTree
       end
     end
 
+    # test the detached_copy method.
     def test_detached_copy
-      load_children
+      setup_test_tree
 
       assert(@root.has_children?, "The root should have children")
       copy_of_root = @root.detached_copy
@@ -698,22 +772,26 @@ module TestTree
       assert(!copy_of_child3.has_children?, "Child 3's copy does not have children")
     end
 
+    # Test the has_children? method.
     def test_has_children_eh
-      load_children
+      setup_test_tree
       assert(@root.has_children?, "The Root node MUST have children")
     end
 
+    # test the is_leaf? method.
     def test_is_leaf_eh
-      load_children
+      setup_test_tree
       assert(!@child3.is_leaf?, "Child 3 is not a leaf node")
       assert(@child4.is_leaf?, "Child 4 is a leaf node")
     end
 
+    # Test the is_root? method.
     def test_is_root_eh
-      load_children
+      setup_test_tree
       assert(@root.is_root?, "The ROOT node must respond as the root node")
     end
 
+    # Test the content= method.
     def test_content_equals
       @root.content = nil
       assert_nil(@root.content, "Root's content should be nil")
@@ -721,13 +799,15 @@ module TestTree
       assert_equal("ABCD", @root.content, "Root's content should now be 'ABCD'")
     end
 
+    # Test the size method.
     def test_size
       assert_equal(1, @root.size, "Root's size should be 1")
-      load_children
+      setup_test_tree
       assert_equal(5, @root.size, "Root's size should be 5")
       assert_equal(2, @child3.size, "Child 3's size should be 2")
     end
 
+    # Test the << method.
     def test_lt2                # Test the << method
       @root << @child1
       @root << @child2
@@ -738,8 +818,9 @@ module TestTree
       assert_not_nil(@child3['Child31'], "Child 31 should have been added to Child3")
     end
 
+    # Test the [] method.
     def test_index              #  Test the [] method
-      assert_raise(RuntimeError) {@root[nil]}
+      assert_raise(ArgumentError) {@root[nil]}
 
       @root << @child1
       @root << @child2
@@ -751,10 +832,33 @@ module TestTree
       assert_nil(@root['Some Random Name'], "Should return nil")
       assert_nil(@root[99], "Should return nil")
     end
-    
+
+    # Test the in_degree method.
+    def test_in_degree
+      setup_test_tree
+
+      assert_equal(0, @root.in_degree, "Root's in-degree should be zero")
+      assert_equal(1, @child1.in_degree, "Child 1's in-degree should be 1")
+      assert_equal(1, @child2.in_degree, "Child 2's in-degree should be 1")
+      assert_equal(1, @child3.in_degree, "Child 3's in-degree should be 1")
+      assert_equal(1, @child4.in_degree, "Child 4's in-degree should be 1")
+    end
+
+    # Test the out_degree method.
+    def test_out_degree
+      setup_test_tree
+
+      assert_equal(3, @root.out_degree, "Root's out-degree should be 3")
+      assert_equal(0, @child1.out_degree, "Child 1's out-degree should be 0")
+      assert_equal(0, @child2.out_degree, "Child 2's out-degree should be 0")
+      assert_equal(1, @child3.out_degree, "Child 3's out-degree should be 1")
+      assert_equal(0, @child4.out_degree, "Child 4's out-degree should be 0")
+    end
+
+    # Test the new JSON serialization method.
     def test_json_serialization
-      load_children
-      
+      setup_test_tree
+
       expected_json = {
         "name"         => "ROOT",
         "content"      => "Root Node",
@@ -772,10 +876,10 @@ module TestTree
           }
         ]
       }.to_json
-      
+
       assert_equal(expected_json, @root.to_json)
     end
-    
+
     def test_json_deserialization
       tree_as_json = {
         "name"         => "ROOT",
@@ -794,9 +898,9 @@ module TestTree
           }
         ]
       }.to_json
-      
+
       tree = JSON.parse(tree_as_json)
-      
+
       assert_equal(@root.name, tree.root.name, "Root should be returned")
       assert_equal(@child1.name, tree[0].name, "Child 1 should be returned")
       assert_equal(@child2.name, tree[1].name, "Child 2 should be returned")
@@ -805,10 +909,12 @@ module TestTree
     end
     
     def test_old_camelCase_method_names
-      load_children
+      setup_test_tree
       
+      puts
       @root.printTree
-
+      puts
+      
       @root.isRoot?
       @child4.isLeaf?
       @child4.hasContent?

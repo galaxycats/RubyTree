@@ -47,7 +47,10 @@ module Tree
   # Provides a Binary tree implementation. This node allows only two child nodes (left and right child).  It also
   # provides direct access to the left or right child, including assignment to the same.
   #
-  # This inherits from the Tree::TreeNode class.
+  # This inherits from the {Tree::TreeNode} class.
+  #
+  # @author Anupam Sengupta
+  #
   class BinaryTreeNode < TreeNode
 
     # Adds the specified child node to the receiver node.  The child node's parent is set to be the receiver.
@@ -57,14 +60,20 @@ module Tree
     #
     # If only one child is present, then this will be the left child.
     #
-    # An exception is raised if two children are already present.
+    # @param [Tree::BinaryTreeNode] child The child to add.
+    #
+    # @raise [ArgumentError] This exception is raised if two children are already present.
     def add(child)
-      raise "Already has two child nodes" if @children.size == 2
+      raise ArgumentError, "Already has two child nodes" if @children.size == 2
 
       super(child)
     end
 
     # Returns the left child of the receiver node. Note that left Child == first Child.
+    #
+    # @return [Tree::BinaryTreeNode] The left most (or first) child.
+    #
+    # @see #rightChild
     def left_child
       children.first
     end
@@ -72,35 +81,61 @@ module Tree
     # Returns the right child of the receiver node. Note that right child == last child unless there is only one child.
     #
     # Returns +nil+ if the right child does not exist.
+    #
+    # @return [Tree::BinaryTreeNode] The right child, or +nil+ if the right side child does not exist.
+    #
+    # @see #leftChild
     def right_child
       children[1]
     end
 
     # Sets the left child of the receiver node. If a previous child existed, it is replaced.
+    #
+    # @param [Tree::BinaryTreeNode] child The child to add as the left-side node.
+    #
+    # @return [Tree::BinaryTreeNode] The assigned child node.
+    #
+    # @see #leftChild
+    # @see #rightChild=
     def left_child=(child)
       @children[0] = child
       @children_hash[child.name] = child if child # Assign the name mapping
     end
 
     # Sets the right child of the receiver node. If a previous child existed, it is replaced.
+    #
+    # @param [Tree::BinaryTreeNode] child The child to add as the right-side node.
+    #
+    # @return [Tree::BinaryTreeNode] The assigned child node.
+    #
+    # @see #rightChild
+    # @see #leftChild=
     def right_child=(child)
       @children[1] = child
       @children_hash[child.name] = child if child # Assign the name mapping
     end
 
-    # Returns +true+ if the receiver node is the left child of its parent.  Always returns +false+ if it is a root node.
+    # Returns +true+ if the receiver node is the left child of its parent.
+    # Always returns +false+ if it is a root node.
+    #
+    # @return [Boolean] +true+ if this is the left child of its parent.
     def is_left_child?
       return false if is_root?
       self == parent.left_child
     end
 
-    # Returns +true+ if the receiver node is the right child of its parent. Always returns +false+ if it is a root node.
+    # Returns +true+ if the receiver node is the right child of its parent.
+    # Always returns +false+ if it is a root node.
+    #
+    # @return [Boolean] +true+ if this is the right child of its parent.
     def is_right_child?
       return false if is_root?
       self == parent.right_child
     end
 
-    # Swaps the left and right cthild nodes of the receiver node with each other.
+    # Swaps the left and right child nodes of the receiver node with each other.
+    #
+    # @todo Define the return value.
     def swap_children
       temp_child       = left_child
       self.left_child  = right_child

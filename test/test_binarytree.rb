@@ -41,6 +41,7 @@ module TestTree
   # Test class for the binary tree node.
   class TestBinaryTreeNode < Test::Unit::TestCase
 
+    # Setup the test data scaffolding.
     def setup
       @root = Tree::BinaryTreeNode.new("ROOT", "Root Node")
 
@@ -48,16 +49,19 @@ module TestTree
       @right_child1 = Tree::BinaryTreeNode.new("B Child at Right", "Child Node @ right")
     end
 
+    # Tear down the test data scaffolding.
     def teardown
       @root.remove!(@left_child1)
       @root.remove!(@right_child1)
       @root = nil
     end
 
+    # Test initialization of the binary tree.
     def test_initialize
       assert_not_nil(@root, "Binary tree's Root should have been created")
     end
 
+    # Test the add method.
     def test_add
       @root.add  @left_child1
       assert_same(@left_child1, @root.left_child, "The left node should be left_child1")
@@ -67,15 +71,16 @@ module TestTree
       assert_same(@right_child1, @root.right_child, "The right node should be right_child1")
       assert_same(@right_child1, @root.last_child, "The first node should be right_child1")
 
-      assert_raise RuntimeError do
+      assert_raise ArgumentError do
         @root.add Tree::BinaryTreeNode.new("The third child!")
       end
 
-      assert_raise RuntimeError do
+      assert_raise ArgumentError do
         @root << Tree::BinaryTreeNode.new("The third child!")
       end
     end
 
+    # Test the left_child method.
     def test_left_child
       @root << @left_child1
       @root << @right_child1
@@ -83,6 +88,7 @@ module TestTree
       assert_not_same(@right_child1, @root.left_child, "The right_child1 is not the left child")
     end
 
+    # Test the right_child method.
     def test_right_child
       @root << @left_child1
       @root << @right_child1
@@ -90,6 +96,7 @@ module TestTree
       assert_not_same(@left_child1, @root.right_child, "The left_child1 is not the left child")
     end
 
+    # Test left_child= method.
     def test_left_child_equals
       @root << @left_child1
       @root << @right_child1
@@ -106,6 +113,7 @@ module TestTree
       assert_equal("B Child at Right", @root.last_child.name, "The last child should now be the right child")
     end
 
+    # Test right_child= method.
     def test_right_child_equals
       @root << @left_child1
       @root << @right_child1
@@ -123,6 +131,7 @@ module TestTree
       assert_nil(@root.last_child, "The first child is now nil")
     end
 
+    # Test is_left_child? method.
     def test_is_left_child_eh
       @root << @left_child1
       @root << @right_child1
@@ -137,6 +146,7 @@ module TestTree
       assert(!@root.is_left_child?, "Root is neither left child nor right")
     end
 
+    # Test is_right_child? method.
     def test_is_right_child_eh
       @root << @left_child1
       @root << @right_child1
@@ -150,6 +160,7 @@ module TestTree
       assert(!@root.is_right_child?, "Root is neither left child nor right")
     end
 
+    # Test swap_children method.
     def test_swap_children
       @root << @left_child1
       @root << @right_child1
