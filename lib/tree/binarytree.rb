@@ -73,7 +73,7 @@ module Tree
     #
     # @return [Tree::BinaryTreeNode] The left most (or first) child.
     #
-    # @see #rightChild
+    # @see #right_child
     def left_child
       children.first
     end
@@ -84,7 +84,7 @@ module Tree
     #
     # @return [Tree::BinaryTreeNode] The right child, or +nil+ if the right side child does not exist.
     #
-    # @see #leftChild
+    # @see #left_child
     def right_child
       children[1]
     end
@@ -95,8 +95,8 @@ module Tree
     #
     # @return [Tree::BinaryTreeNode] The assigned child node.
     #
-    # @see #leftChild
-    # @see #rightChild=
+    # @see #left_child
+    # @see #right_child=
     def left_child=(child)
       @children[0] = child
       @children_hash[child.name] = child if child # Assign the name mapping
@@ -108,8 +108,8 @@ module Tree
     #
     # @return [Tree::BinaryTreeNode] The assigned child node.
     #
-    # @see #rightChild
-    # @see #leftChild=
+    # @see #right_child
+    # @see #left_child=
     def right_child=(child)
       @children[1] = child
       @children_hash[child.name] = child if child # Assign the name mapping
@@ -137,9 +137,7 @@ module Tree
     #
     # @todo Define the return value.
     def swap_children
-      temp_child       = left_child
-      self.left_child  = right_child
-      self.right_child = temp_child
+      self.left_child, self.right_child = self.right_child, self.left_child
     end
   end
 

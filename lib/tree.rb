@@ -48,7 +48,7 @@
 module Tree
 
   # Rubytree Package Version
-  VERSION = '0.7.1'
+  VERSION = '0.8.0'
 
   # == TreeNode Class Description
   #
@@ -97,13 +97,14 @@ module Tree
   #
   #    # ..... Create the root node first.  Note that every node has a name and an optional content payload.
   #    root_node = Tree::TreeNode.new("ROOT", "Root Content")
+  #    root_node.print_tree
   #
   #    # ..... Now insert the child nodes.  Note that you can "chain" the child insertions for a given path to any depth.
   #    root_node << Tree::TreeNode.new("CHILD1", "Child1 Content") << Tree::TreeNode.new("GRANDCHILD1", "GrandChild1 Content")
   #    root_node << Tree::TreeNode.new("CHILD2", "Child2 Content")
   #
   #    # ..... Lets print the representation to stdout.  This is primarily used for debugging purposes.
-  #    root_node.printTree
+  #    root_node.print_tree
   #
   #    # ..... Lets directly access children and grandchildren of the root.  The can be "chained" for a given path to any depth.
   #    child1       = root_node["CHILD1"]
@@ -234,24 +235,43 @@ module Tree
     # just appended. This feature is provided to make implementation of node
     # movement within the tree very simple.
     #
+    # Additionally you can specify a insert position. The new node will be inserted
+    # BEFORE that position. If you don't specify any position the node will be
+    # just appended. This feature is provided to make implementation of node
+    # movement within the tree very simple.
+    #
+    # If an insertion position is provided, it needs to be within the valid range of:
+    #
+    #    -children.size..children.size
+    #
+    # This is to prevent +nil+ nodes being created as children if a non-existant position is used.
+    #
     # @param [Tree::TreeNode] child The child node to add.
+    # @param [optional, Number] at_index The optional position where the node is to be inserted.
     #
     # @return [Tree::TreeNode] The added child node.
     #
     # @raise [RuntimeError] This exception is raised if another child node with the same
-    # name exists.
+    # name exists, or if an invalid insertion position is specified.
     # @raise [ArgumentError] This exception is raised if a +nil+ node is passed as the argument.
     #
     # @see #<<
     def add(child, at_index = -1)
       raise ArgumentError, "Attempting to add a nil node" unless child
-      raise "Child already added" if @children_hash.has_key?(child.name)
+      raise "Child #{child.name} already added!" if @children_hash.has_key?(child.name)
+
+      if insertion_range.include?(at_index)
+        @children.insert(at_index, child)
+      else
+        raise "Attempting to insert a child at a non-existent location (#{at_index}) when only positions from #{insertion_range.min} to #{insertion_range.max} exist."
+      end
 
       @children_hash[child.name]  = child
-      @children.insert(at_index, child)
       child.parent = self
       return child
     end
+
+
 
     # Removes the specified child node from the receiver node.
     #
@@ -265,11 +285,11 @@ module Tree
     #
     # @return [Tree::TreeNode] The removed child node, or +nil+ if a +nil+ was passed in as argument.
     #
-    # @see #removeFromParent!
-    # @see #removeAll!
+    # @see #remove_from_parent!
+    # @see #remove_all!
     def remove!(child)
       return nil unless child
-      
+
       @children_hash.delete(child.name)
       @children.delete(child)
       child.set_as_root!
@@ -282,7 +302,7 @@ module Tree
     #
     # @return [Tree:TreeNode] +self+ (the removed receiver node) if the operation is successful, +nil+ otherwise.
     #
-    # @see #removeAll!
+    # @see #remove_all!
     def remove_from_parent!
       @parent.remove!(self) unless is_root?
     end
@@ -293,7 +313,7 @@ module Tree
     # @return [Tree::TreeNode] The receiver node (+self+)
     #
     # @see #remove!
-    # @see #removeFromParent!
+    # @see #remove_from_parent!
     def remove_all!
       for child in @children
         child.set_as_root!
@@ -328,7 +348,7 @@ module Tree
     #
     # @return [Boolean] +true+ if child nodes exist.
     #
-    # @see #isLeaf?
+    # @see #is_leaf?
     def has_children?
       @children.length != 0
     end
@@ -338,7 +358,7 @@ module Tree
     #
     # @return [Boolean] +true+ if this is a leaf node.
     #
-    # @see #hasChildren?
+    # @see #has_children?
     def is_leaf?
       !has_children?
     end
@@ -534,8 +554,8 @@ module Tree
     #
     # @return [Tree::TreeNode] The first sibling node.
     #
-    # @see #isFirstSibling?
-    # @see #lastSibling
+    # @see #is_first_sibling?
+    # @see #last_sibling
     def first_sibling
       is_root? ? self : parent.children.first
     end
@@ -544,8 +564,8 @@ module Tree
     #
     # @return [Boolean] +true+ if this is the first sibling.
     #
-    # @see #isLastSibling?
-    # @see #firstSibling
+    # @see #is_last_sibling?
+    # @see #first_sibling
     def is_first_sibling?
       first_sibling == self
     end
@@ -561,8 +581,8 @@ module Tree
     #
     # @return [Tree::TreeNode] The last sibling node.
     #
-    # @see #isLastSibling?
-    # @see #firstSibling
+    # @see #is_last_sibling?
+    # @see #first_sibling
     def last_sibling
       is_root? ? self : parent.children.last
     end
@@ -571,8 +591,8 @@ module Tree
     #
     # @return [Boolean] +true+ if this is the last sibling.
     #
-    # @see #isFirstSibling?
-    # @see #lastSibling
+    # @see #is_first_sibling?
+    # @see #last_sibling
     def is_last_sibling?
       last_sibling == self
     end
@@ -592,8 +612,8 @@ module Tree
     #
     # @return [Array<Tree::TreeNode>] Array of siblings of this node.
     #
-    # @see #firstSibling
-    # @see #lastSibling
+    # @see #first_sibling
+    # @see #last_sibling
     def siblings
       return nil if is_root?
 
@@ -626,7 +646,7 @@ module Tree
     #
     # @return [Tree::treeNode] the next sibling node, if present.
     #
-    # @see #previousSibling
+    # @see #previous_sibling
     # @see #siblings
     def next_sibling
       return nil if is_root?
@@ -642,10 +662,11 @@ module Tree
     #
     # @return [Tree::treeNode] the previous sibling node, if present.
     #
-    # @see #nextSibling
+    # @see #next_sibling
     # @see #siblings
     def previous_sibling
       return nil if is_root?
+
       if myidx = parent.children.index(self)
         parent.children.at(myidx - 1) if myidx > 0
       end
@@ -780,6 +801,9 @@ module Tree
     #
     # Depth:: Length of the node's path to its root.  Depth of a root node is zero.
     #
+    # *Note* that the deprecated method Tree::TreeNode#depth was incorrectly computing this value.
+    # Please replace all calls to the old method with Tree::TreeNode#node_depth instead.
+    #
     # 'level' is an alias for this method.
     #
     # @return [Number] Depth of this node.
@@ -787,7 +811,8 @@ module Tree
       return 0 if is_root?
       1 + parent.node_depth
     end
-    alias level node_depth       # Aliased level() method to the nodeDepth().
+
+    alias level node_depth       # Aliased level() method to the node_depth().
 
     # Returns depth of the tree from the receiver node. A single leaf node has a depth of 1.
     #
@@ -796,13 +821,13 @@ module Tree
     #
     # _height_ + 1 of the node, *NOT* the _depth_.
     #
-    # For correct and conventional behavior, please use {Tree::TreeNode#nodeDepth} and
-    # {Tree::TreeNode#nodeHeight} methods instead.
+    # For correct and conventional behavior, please use {Tree::TreeNode#node_depth} and
+    # {Tree::TreeNode#node_height} methods instead.
     #
     # @return [Number] depth of the node.
-    # @deprecated This method returns an incorrect value.  Use the 'nodeDepth' method instead.
+    # @deprecated This method returns an incorrect value.  Use the 'node_depth' method instead.
     #
-    # @see #nodeDepth
+    # @see #node_depth
     def depth
       begin
         require 'structured_warnings'   # To enable a nice way of deprecating of the depth method.
@@ -816,16 +841,21 @@ module Tree
       1 + @children.collect { |child| child.depth }.max
     end
     
+    # Allow the deprecated CamelCase method names.  Display a warning.
     def method_missing(meth, *args, &blk)
       if self.respond_to?(new_method_name = underscore(meth))
         begin
-          require 'structured_warnings'   # To enable a nice way of deprecating of the depth method.
+          require 'structured_warnings'   # To enable a nice way of deprecating of the invoked CamelCase method.
           warn DeprecatedMethodWarning, "The camelCased methods are deprecated. Please use #{new_method_name} instead of #{meth}"
+
         rescue LoadError
           # Oh well. Will use the standard Kernel#warn.  Behavior will be identical.
           warn "Tree::TreeNode##{meth}() method is deprecated. Please use #{new_method_name} instead."
+
+        ensure                  # Invoke the method now.
+          return send(new_method_name, *args, &blk)
         end
-        send(new_method_name, *args, &blk)
+
       else
         super
       end
@@ -867,9 +897,11 @@ module Tree
     end
 
     protected :parent=, :set_as_root!, :create_dump_rep
-    
+
     private
 
+      # Convert a CamelCasedWord to a underscore separated camel_cased_word.
+      #
       # Just copied from ActiveSupport::Inflector because it is only needed
       # aliasing deprecated methods
       def underscore(camel_cased_word)
@@ -880,6 +912,13 @@ module Tree
         word.tr!("-", "_")
         word.downcase!
         word
+      end
+
+      # Return a range of valid insertion positions.  Used in the #add method.
+      def insertion_range
+        max = @children.size
+        min = -(max+1)
+        min..max
       end
 
   end

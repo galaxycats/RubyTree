@@ -71,7 +71,8 @@ module TestTree
       @child1 = Tree::TreeNode.new("Child1", "Child Node 1")
       @child2 = Tree::TreeNode.new("Child2", "Child Node 2")
       @child3 = Tree::TreeNode.new("Child3", "Child Node 3")
-      @child4 = Tree::TreeNode.new("Child31", "Grand Child 1")
+      @child4 = Tree::TreeNode.new("Child4", "Grand Child 1")
+      @child5 = Tree::TreeNode.new("Child5", "Child Node 4")
 
     end
 
@@ -89,16 +90,16 @@ module TestTree
 
     # This test is for the root alone - without any children being linked
     def test_root_setup
-      assert_not_nil(@root       , "Root cannot be nil")
-      assert_nil(@root.parent    , "Parent of root node should be nil")
-      assert_not_nil(@root.name  , "Name should not be nil")
-      assert_equal("ROOT"        , @root.name, "Name should be 'ROOT'")
-      assert_equal("Root Node"   , @root.content, "Content should be 'Root Node'")
+      assert_not_nil(@root        , "Root cannot be nil")
+      assert_nil(@root.parent     , "Parent of root node should be nil")
+      assert_not_nil(@root.name   , "Name should not be nil")
+      assert_equal("ROOT"         , @root.name, "Name should be 'ROOT'")
+      assert_equal("Root Node"    , @root.content, "Content should be 'Root Node'")
       assert(@root.is_root?       , "Should identify as root")
       assert(!@root.has_children? , "Cannot have any children")
       assert(@root.has_content?   , "This root should have content")
-      assert_equal(1             , @root.size, "Number of nodes should be one")
-      assert_nil(@root.siblings  , "This root does not have any children")
+      assert_equal(1              , @root.size, "Number of nodes should be one")
+      assert_nil(@root.siblings   , "This root does not have any children")
       assert_equal(0, @root.in_degree, "Root should have an in-degree of 0")
       assert_equal(0, @root.node_height, "Root's height before adding any children is 0")
       assert_raise(ArgumentError) { Tree::TreeNode.new(nil) }
@@ -135,9 +136,10 @@ module TestTree
     end
 
     # Test the <=> operator.
-    def test_spaceship          # Test the <=> operator.
+    def test_spaceship
       first_node  = Tree::TreeNode.new(1)
       second_node = Tree::TreeNode.new(2)
+
 
       assert_equal(first_node <=> nil, +1)
       assert_equal(first_node <=> second_node, -1)
@@ -164,7 +166,7 @@ module TestTree
       assert_equal(expected_string, a_node.to_s, "The string representation should be same")
     end
 
-    # Test the first_sibling method
+    # Test the first_sibling method.
     def test_first_sibling
       setup_test_tree
 
@@ -176,7 +178,7 @@ module TestTree
       assert_not_same(@child1, @child4.first_sibling, "Child4's first sibling is itself")
     end
 
-    # Test the is_first_sibling? method
+    # Test the is_first_sibling? method.
     def test_is_first_sibling_eh
       setup_test_tree
 
@@ -188,7 +190,7 @@ module TestTree
       assert( @child4.is_first_sibling?, "Child4's first sibling is itself")
     end
 
-    # Test the is_last_sibling? method
+    # Test the is_last_sibling? method.
     def test_is_last_sibling_eh
       setup_test_tree
 
@@ -200,7 +202,7 @@ module TestTree
       assert( @child4.is_last_sibling?, "Child4's last sibling is itself")
     end
 
-    # Test the last_sibling method
+    # Test the last_sibling method.
     def test_last_sibling
       setup_test_tree
 
@@ -245,7 +247,7 @@ module TestTree
       assert(!@child1.is_only_child?, "Child1 is not the only child")
       assert(!@child2.is_only_child?, "Child2 is not the only child")
       assert(!@child3.is_only_child?, "Child3 is not the only child")
-      assert( @child4.is_only_child?, "Child4 is not the only child")
+      assert( @child4.is_only_child?, "Child4 is an only child")
     end
 
     # Test the next_sibling method.
@@ -293,23 +295,69 @@ module TestTree
       # Test the addition of a duplicate node (duplicate being defined as a node with the same name).
       assert_raise(RuntimeError) { @root.add(Tree::TreeNode.new(@child1.name)) }
     end
-    
+
+    # Test Addition at a specific position
     def test_add_at_specific_position
       assert(!@root.has_children?, "Should not have any children")
 
       assert_equal(1, @root.size, "Should have 1 node (the root)")
-      @root.add(@child1)
+      @root.add(@child1)        # First Child added at position 0
+      # Validate that children = [@child1]
+      assert_equal(@child1, @root[0])
 
-      @root << @child2
+      @root << @child2          # Second child appended at position 1.
+      # Validate that children = [@child1, @child2]
+      assert_equal(@child1, @root[0])
+      assert_equal(@child2, @root[1])
+      assert_equal(2, @root.children.size, "Should have two child nodes")
 
-      assert(@root.has_children?, "Should have children")
-      assert_equal(3, @root.size, "Should have three nodes")
+      @root.add(@child3, 1)     # Third child inserted at position 1 (before @child2)
+      # Validate that children = [@child1, @child3, @child2]
+      assert_equal(@child1, @root[0])
+      assert_equal(@child3, @root[1])
+      assert_equal(@child2, @root[2])
+      assert_equal(3, @root.children.size, "Should have three child nodes")
 
-      @root.add(@child3, 1)
-      
-      assert_equal @child1, @root[0]
-      assert_equal @child3, @root[1]
-      assert_equal @child2, @root[2]
+      @root.add(@child4, @root.children.size)     # Fourth child inserted at the end (equivalent to plain #add(child4)
+      # Validate that children = [@child1, @child3, @child2, @child4]
+      assert_equal(@child1, @root[0])
+      assert_equal(@child3, @root[1])
+      assert_equal(@child2, @root[2])
+      assert_equal(@child4, @root[3])
+      assert_equal(4, @root.children.size, "Should have four child nodes")
+
+      # Now, a negative test.  We are preventing addition to a position that does not exist.
+      assert_raise(RuntimeError) {
+        @root.add(@child5, @root.children.size + 1)     # Fifth child inserted beyond the last position that is valid (at 5th pos).
+      }
+      # Validate that we still have children = [@child1, @child3, @child2, @child4]
+      assert_equal(@child1, @root[0])
+      assert_equal(@child3, @root[1])
+      assert_equal(@child2, @root[2])
+      assert_equal(@child4, @root[3])
+      assert_nil(@root[4])
+      assert_equal(4, @root.children.size, "Should have four child nodes")
+
+      # Another negative test.  Lets attempt to add from the end at a position that is not available
+      assert_raise(RuntimeError) {
+        @root.add(@child5, -(@root.children.size+2))     # Fifth child inserted beyond the first position that is valid; i.e. at -6
+      }
+      assert_nil(@root[-5])
+      assert_equal(@child1, @root[-4])
+      assert_equal(@child3, @root[-3])
+      assert_equal(@child2, @root[-2])
+      assert_equal(@child4, @root[-1])
+      assert_equal(4, @root.children.size, "Should have four child nodes")
+
+      # Lets correctly add the fifth child from the end to effectively prepend the node.
+      @root.add(@child5, -(@root.children.size+1))     # Fifth child inserted beyond the first position; i.e. at -5
+      assert_nil(@root[-6])
+      assert_equal(@child5, @root[-5])
+      assert_equal(@child1, @root[-4])
+      assert_equal(@child3, @root[-3])
+      assert_equal(@child2, @root[-2])
+      assert_equal(@child4, @root[-1])
+      assert_equal(5, @root.children.size, "Should have five child nodes")
     end
 
     # Test the remove! and remove_all! methods.
@@ -358,6 +406,7 @@ module TestTree
     # Test the remove_from_parent! method.
     def test_remove_from_parent_bang
       setup_test_tree
+
       assert(@root.has_children?, "Should have children")
       assert(!@root.is_leaf?, "Root is not a leaf here")
 
@@ -431,7 +480,7 @@ module TestTree
       found_node = @root.find { |node| node == @child4}
       assert_same(@child4, found_node, "The node should be Child 4")
 
-      found_node = @root.find { |node| node.name == "Child31" }
+      found_node = @root.find { |node| node.name == "Child4" }
       assert_same(@child4, found_node, "The node should be Child 4")
       found_node = @root.find { |node| node.name == "NOT PRESENT" }
       assert_nil(found_node, "The node should not be found")
@@ -449,6 +498,7 @@ module TestTree
     # Test the each method.
     def test_each
       setup_test_tree
+
       assert(@root.has_children?, "Should have children")
       assert_equal(5, @root.size, "Should have five nodes")
       assert(@child3.has_children?, "Should have children")
@@ -566,6 +616,7 @@ module TestTree
     # Test freezing the tree
     def test_freeze_tree_bang
       setup_test_tree
+
       @root.content = "ABC"
       assert_equal("ABC", @root.content, "Content should be 'ABC'")
       @root.freeze_tree!
@@ -643,6 +694,7 @@ module TestTree
       assert_equal(0, @root.node_depth, "A root node's depth is 0")
 
       setup_test_tree
+
       for child in [@child1, @child2, @child3]
         assert_equal(1, child.node_depth, "Node #{child.name} should have depth 1")
       end
@@ -650,7 +702,7 @@ module TestTree
       assert_equal(2, @child4.node_depth, "Child 4 should have depth 2")
     end
 
-    # Test the level method.  Since this is an alias of nodeDepth, we just test for equivalence
+    # Test the level method.  Since this is an alias of node_depth, we just test for equivalence
     def test_level
       assert_equal(0, @root.level, "A root node's level is 0")
 
@@ -803,6 +855,7 @@ module TestTree
     def test_size
       assert_equal(1, @root.size, "Root's size should be 1")
       setup_test_tree
+
       assert_equal(5, @root.size, "Root's size should be 5")
       assert_equal(2, @child3.size, "Child 3's size should be 2")
     end
@@ -815,7 +868,7 @@ module TestTree
       assert_not_nil(@root['Child1'], "Child 1 should have been added to Root")
       assert_not_nil(@root['Child2'], "Child 2 should have been added to Root")
       assert_not_nil(@root['Child3'], "Child 3 should have been added to Root")
-      assert_not_nil(@child3['Child31'], "Child 31 should have been added to Child3")
+      assert_not_nil(@child3['Child4'], "Child 4 should have been added to Child3")
     end
 
     # Test the [] method.
@@ -826,11 +879,17 @@ module TestTree
       @root << @child2
       assert_equal(@child1.name, @root['Child1'].name, "Child 1 should be returned")
       assert_equal(@child1.name, @root[0].name, "Child 1 should be returned")
+      assert_equal(@child1.name, @root[-2].name, "Child 1 should be returned") # Negative access also works
+      assert_equal(@child1.name, @root[-(@root.children.size)].name, "Child 1 should be returned") # Negative access also works
+
       assert_equal(@child2.name, @root['Child2'].name, "Child 2 should be returned")
       assert_equal(@child2.name, @root[1].name, "Child 2 should be returned")
+      assert_equal(@child2.name, @root[-1].name, "Child 2 should be returned") # Negative access also works
 
       assert_nil(@root['Some Random Name'], "Should return nil")
       assert_nil(@root[99], "Should return nil")
+      assert_nil(@root[-(@root.children.size+1)], "Should return nil")
+      assert_nil(@root[-3], "Should return nil")
     end
 
     # Test the in_degree method.
@@ -871,7 +930,7 @@ module TestTree
             "content"      => "Child Node 3",
             JSON.create_id => "Tree::TreeNode",
             "children" => [
-              {"name" => "Child31", "content" => "Grand Child 1", JSON.create_id => "Tree::TreeNode"}
+              {"name" => "Child4", "content" => "Grand Child 1", JSON.create_id => "Tree::TreeNode"}
             ]
           }
         ]
@@ -893,7 +952,7 @@ module TestTree
             "content"      => "Child Node 3",
             JSON.create_id => "Tree::TreeNode",
             "children" => [
-              {"name" => "Child31", "content" => "Grand Child 1", JSON.create_id => "Tree::TreeNode"}
+              {"name" => "Child4", "content" => "Grand Child 1", JSON.create_id => "Tree::TreeNode"}
             ]
           }
         ]
@@ -907,39 +966,26 @@ module TestTree
       assert_equal(@child3.name, tree[2].name, "Child 3 should be returned")
       assert_equal(@child4.name, tree[2][0].name, "Grand Child 1 should be returned")
     end
-    
+
+    # Test the old CamelCase method names
     def test_old_camelCase_method_names
       setup_test_tree
-      
-      puts
-      @root.printTree
-      puts
-      
-      @root.isRoot?
-      @child4.isLeaf?
-      @child4.hasContent?
-      @root.hasChildren?
-      @root.setAsRoot!
-      @root.firstChild
-      @root.lastChild
-      @child1.firstSibling
-      @child1.isFirstSibling?
-      @child3.lastSibling
-      @child3.isLastSibling?
-      @child4.isOnlyChild?
-      @child2.nextSibling
-      @child2.previousSibling
-      @root.nodeHeight
-      @root.nodeDepth
 
-      @root.createDumpRep
+      meth_names_to_test = %w{printTree isRoot? isLeaf? hasContent?
+                              hasChildren? setAsRoot! firstChild lastChild
+                              firstSibling isFirstSibling? lastSibling isLastSibling?
+                              isOnlyChild? nextSibling previousSibling nodeHeight nodeDepth
+                              createDumpRep removeFromParent! removeAll! freezeTree! }
 
-      @child4.removeFromParent!
-      @root.removeAll!
-      
-      @root.freezeTree!
+      require 'structured_warnings'
+
+      assert @root.isRoot? # Test if the original method is really called
+
+      meth_names_to_test.each do |meth_name|
+        assert_warn(DeprecatedMethodWarning) {@root.send(meth_name)}
+      end
     end
-    
+
   end
 end
 
